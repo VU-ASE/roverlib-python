@@ -1,0 +1,5 @@
+build==1.2.1
+pytest==8.3.2
+setuptools==72.0.0
+twine==5.1.1
+uv==0.2.30

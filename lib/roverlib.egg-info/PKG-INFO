@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: roverlib
+Version: 0.0.25
+Summary: An entrypoint library that provides full integration with the ASE software framework.An entrypoint library that provides full integration with the ASE software framework.
+Home-page: https://github.com/VU-ASE/roverlib-python
+Author: Max Gallup
+Author-email: ase@vu.nl
+License: GPL
+Classifier: Framework :: Robot Framework :: Library
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: twine>=4.0.2; extra == "dev"
+
+# roverlib
+Simple integration with the ASE-framework's core.
+
+## Example
+
+``` python
+
+import roverlib
+
+r = roverlib.init("My custom rover")
+
+print(r.info)
+
+```

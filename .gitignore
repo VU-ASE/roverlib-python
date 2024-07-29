@@ -1,0 +1,7 @@
+*cache*
+
+.venv
+
+build
+dist
+
