@@ -16,12 +16,19 @@ build: lint install-deps clean
 	. .venv/bin/activate; python3 setup.py bdist_wheel sdist
 
 
+start:
+	./roverlib-wrapper/bin/roverlib-wrapper python3 run.py
+
+
 test: lint install-deps clean
-	. .venv/bin/activate; pytest
+	. .venv/bin/activate; ./roverlib-wrapper/bin/roverlib-wrapper pytest
 
 
 install-test:
 	. .venv/bin/activate; uv pip install --index-url https://test.pypi.org/simple/ --no-deps --upgrade roverlib
 
-upload-test: build
-	. .venv/bin/activate; python3 -m twine upload --repository testpypi dist/*
+install:
+	. .venv/bin/activate; uv pip install --upgrade roverlib
+
+upload: build
+	. .venv/bin/activate; python3 -m twine upload dist/*

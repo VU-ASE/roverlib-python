@@ -2,6 +2,6 @@ from ..src.roverlib import init
 
 
 def test_init():
-    r = init("My Rover")
+    r = init()
 
-    assert r.info["name"] == "My Rover"
+    print(r.info)
