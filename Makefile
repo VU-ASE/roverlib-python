@@ -20,12 +20,18 @@ start:
 	./roverlib-wrapper/bin/roverlib-wrapper python3 run.py
 
 
-test: lint install-deps clean
-	. .venv/bin/activate; ./roverlib-wrapper/bin/roverlib-wrapper pytest
 
 
 install-test:
 	. .venv/bin/activate; uv pip install --index-url https://test.pypi.org/simple/ --no-deps --upgrade roverlib
+
+
+# The reason we are exporting the path here is so that roverlib can
+# call roverlib-wrapper as a native binary, since that will be the case
+# on the rover
+test: lint install-deps clean
+	. .venv/bin/activate; env PATH=$$PATH:./roverlib-wrapper/bin/ python3 test.py
+
 
 install:
 	. .venv/bin/activate; uv pip install --upgrade roverlib

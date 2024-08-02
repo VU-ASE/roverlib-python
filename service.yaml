@@ -6,12 +6,22 @@ description: testing
 dependencies: []
 
 # No outputs (You'll probably want to update this or `dependencies`)
-outputs: []
+outputs:
+  - name: rpm
+    address: tcp://*:6969
 
 # Runtime options
 options:
-  - name: example_option
-    type: int     # Can be int, float, string, bool
+  - name: exampleInt
+    type: int     # Can be int, float, string
+    mutable: true # Can be changed at runtime
+    default: 1    # Default value
+  - name: exampleFloat
+    type: float     # Can be int, float, string, bool
+    mutable: true # Can be changed at runtime
+    default: 1    # Default value
+  - name: exampleString
+    type: string     # Can be int, float, string, bool
     mutable: true # Can be changed at runtime
     default: 1    # Default value
 
