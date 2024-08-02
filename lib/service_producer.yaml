@@ -1,0 +1,10 @@
+name: python-producer
+description: Testing a service that produces outputs
+
+dependencies: []
+
+outputs:
+  - name: data
+    address: tcp://localhost:8934
+
+options: []

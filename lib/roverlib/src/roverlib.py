@@ -63,6 +63,10 @@ class Rover:
                     name = key.split("ASE_SW_Output_")[1]
                     self.output_handles[name] = zmq_context.socket(zmq.REP)
                     self.output_handles[name].bind(value)
+                elif "Dependency" in key and "core_broadcast" not in key:
+                    name = key.split("ASE_SW_Dependency_")[1]
+                    self.input_handles[name] = zmq_context.socket(zmq.REQ)
+                    self.input_handles[name].connect(value)
 
         for option_name in option_set:
             if os.environ[f"ASE_SW_TuningParameterType_{option_name}"] == "Int":
@@ -86,6 +90,14 @@ class Rover:
 
             print("--- Options ---")
             for key, value in self.options.items():
+                print(f"{key}: {value} {type(value)}")
+
+            print("--- in handles ---")
+            for key, value in self.input_handles.items():
+                print(f"{key}: {value} {type(value)}")
+
+            print("--- out handles ---")
+            for key, value in self.output_handles.items():
                 print(f"{key}: {value} {type(value)}")
 
             sys.stdout.flush()

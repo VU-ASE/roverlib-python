@@ -1,0 +1,10 @@
+name: python-consumer
+description: Testing a service that consumes outputs
+
+dependencies:
+  - service: python-producer
+    output: data
+
+outputs: []
+
+options: []

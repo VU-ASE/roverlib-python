@@ -32,6 +32,11 @@ install-test:
 test: lint install-deps clean
 	. .venv/bin/activate; env PATH=$$PATH:./roverlib-wrapper/bin/ python3 test.py
 
+test-producer: lint install-deps clean
+	. .venv/bin/activate; ./roverlib-wrapper/bin/roverlib-wrapper -service-yaml ./lib/service_producer.yaml "python3 lib/test_producer.py"
+
+test-consumer: lint install-deps clean
+	. .venv/bin/activate; ./roverlib-wrapper/bin/roverlib-wrapper -service-yaml ./lib/service_consumer.yaml "python3 lib/test_consumer.py"
 
 install:
 	. .venv/bin/activate; uv pip install --upgrade roverlib
