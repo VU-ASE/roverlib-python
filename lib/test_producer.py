@@ -4,12 +4,6 @@ import time
 
 r = roverlib.init()
 
-r.print_info()
-
-
 while True:
-    sock = r.output_handles["data"]
-
+    r.publish("data", b"yoooo")
     time.sleep(1)
-
-    sock.send(b"yoooo")

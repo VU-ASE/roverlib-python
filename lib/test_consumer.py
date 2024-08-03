@@ -2,10 +2,7 @@ from roverlib.src import roverlib
 
 r = roverlib.init()
 
-r.print_info()
-
 
 while True:
-    socket = r.input_handles["python-producer_data"]
-    msg = socket.recv()
-    print(f"MSG: {msg}")
+    msg = r.subscribe("python-producer_data")
+    r.log(f"MSG: {msg}")
