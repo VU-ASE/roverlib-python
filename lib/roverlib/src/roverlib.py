@@ -1,11 +1,16 @@
 import os
 import sys
 import subprocess
+import pickle
+import zmq
+
 
 # Custom types for pre 3.10 support
 from typing import Dict, Union
 
 OptionType = Union[int, str, float]
+
+zmq_context = zmq.Context()
 
 
 # Check whether the python script was launched with roverlib-wrapper
@@ -31,6 +36,33 @@ def attach_wrapper() -> None:
     exit(result.returncode)
 
 
+class Handle:
+    def __init__(self, is_subscriber: bool, address: str) -> None:
+        self.__is_subscriber = is_subscriber
+
+        if self.__is_subscriber:
+            self.__handle = zmq_context.socket(zmq.SUB)
+            self.__handle.setsockopt_string(zmq.SUBSCRIBE, "")
+            self.__handle.connect(address)
+        else:
+            self.__handle = zmq_context.socket(zmq.PUB)
+            self.__handle.bind(address)
+
+    # Publishes the python object `data` for any subscriber to receive
+    def write(self, data: any) -> None:
+        if not self.__is_subscriber:
+            pickled_bytes = pickle.dumps(data)
+            self.__handle.send(pickled_bytes)
+        # if any: pickle
+        # else: pb.encode
+
+    # Returns python object subscribed to by `name`
+    def read(self) -> any:
+        if self.__is_subscriber:
+            pickled_bytes = self.__handle.recv()
+            return pickle.loads(pickled_bytes)
+
+
 class Rover:
     def __init__(self) -> None:
         attach_wrapper()
@@ -38,15 +70,14 @@ class Rover:
         self.info = {}
         self.pid: int = 0
         self.name: str = ""
-        self.input_handles: Dict[str, any] = {}
-        self.output_handles: Dict[str, any] = {}
+        
+        # Each zmq socket is identified with its name
+        self.__subs: Dict[str, Handle] = {}
+        self.__pubs: Dict[str, Handle] = {}
+
         self.options: Dict[str, OptionType] = {}
 
         option_set = set()
-
-        import zmq
-
-        self.zmq_context = zmq.Context()
 
         for key, value in os.environ.items():
             if "ASE" in key:
@@ -61,13 +92,10 @@ class Rover:
                     option_set.add(option_name)
                 elif "Output" in key:
                     name = key.split("ASE_SW_Output_")[1]
-                    self.output_handles[name] = self.zmq_context.socket(zmq.PUB)
-                    self.output_handles[name].bind(value)
+                    self.__pubs[name] = Handle(False, value)
                 elif "Dependency" in key and "core_broadcast" not in key:
                     name = key.split("ASE_SW_Dependency_")[1]
-                    self.input_handles[name] = self.zmq_context.socket(zmq.SUB)
-                    self.input_handles[name].setsockopt_string(zmq.SUBSCRIBE, "")
-                    self.input_handles[name].connect(value)
+                    self.__subs[name] = Handle(True, value)
 
         for option_name in option_set:
             if os.environ[f"ASE_SW_TuningParameterType_{option_name}"] == "Int":
@@ -83,29 +111,28 @@ class Rover:
                     os.environ[f"ASE_SW_TuningParameterValue_{option_name}"]
                 )
 
-    def publish(self, name: str, data: bytes) -> None:
-        self.output_handles[name].send(data)
+    def publish(self, name: str) -> Handle:
+        return self.__pubs[name]
 
-    def subscribe(self, name: str) -> bytes:
-        return self.input_handles[name].recv()
+    def subscribe(self, service_name: str, stream_name: str) -> Handle:
+        return self.__subs[f"{service_name}_{stream_name}"]
 
     def print_info(self) -> None:
         if self.info:
-            print("--- Env ---")
-            for key, value in self.info.items():
-                print(f"{key}: {value}")
+            print(f">>> Name: {self.name}")
+            print(f">>> PID: {self.pid}")
+            print(f">>> Number of subscription handles: {len(self.__subs)}")
+            print(f">>> Number of publish handles: {len(self.__pubs)}")
 
-            print("--- Options ---")
+            print(">>> Options:")
+            if len(self.options) == 0:
+                print("    {}")
             for key, value in self.options.items():
-                print(f"{key}: {value} {type(value)}")
+                print(f"    {key}: {value} {type(value)}")
 
-            print("--- in handles ---")
-            for key, value in self.input_handles.items():
-                print(f"{key}: {value} {type(value)}")
-
-            print("--- out handles ---")
-            for key, value in self.output_handles.items():
-                print(f"{key}: {value} {type(value)}")
+            print(">>> Env:")
+            for key, value in self.info.items():
+                print(f"    {key}: {value}")
 
             sys.stdout.flush()
 

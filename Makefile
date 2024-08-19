@@ -16,8 +16,8 @@ build: lint install-deps clean
 	. .venv/bin/activate; python3 setup.py bdist_wheel sdist
 
 
-start:
-	./roverlib-wrapper/bin/roverlib-wrapper python3 run.py
+# start:
+# 	./roverlib-wrapper/bin/roverlib-wrapper python3 run.py
 
 
 

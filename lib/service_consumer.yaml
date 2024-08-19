@@ -1,8 +1,8 @@
-name: python-consumer
+name: consumer
 description: Testing a service that consumes outputs
 
 dependencies:
-  - service: python-producer
+  - service: producer
     output: data
 
 outputs: []
