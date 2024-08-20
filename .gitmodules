@@ -1,3 +1,6 @@
 [submodule "roverlib-wrapper"]
 	path = roverlib-wrapper
 	url = https://github.com/VU-ASE/roverlib-wrapper
+[submodule "rovercom"]
+	path = rovercom
+	url = https://github.com/VU-ASE/rovercom.git

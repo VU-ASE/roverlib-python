@@ -5,6 +5,10 @@ dependencies:
   - service: producer
     output: data
 
+  - service: producer
+    output: brightness
+
+
 outputs: []
 
 options: []

@@ -6,6 +6,8 @@ dependencies: []
 outputs:
   - name: data
     address: tcp://localhost:8934
+  - name: brightness
+    address: tcp://localhost:8938
 
 options:
   - name: increment

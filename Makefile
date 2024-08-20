@@ -20,7 +20,11 @@ build: lint install-deps clean
 # 	./roverlib-wrapper/bin/roverlib-wrapper python3 run.py
 
 
+update:
+	git submodule update --recursive --remote
+	cp -r rovercom/packages/python/gen/* lib/roverlib/src/pb/
 
+	
 
 install-test:
 	. .venv/bin/activate; uv pip install --index-url https://test.pypi.org/simple/ --no-deps --upgrade roverlib
@@ -32,10 +36,10 @@ install-test:
 test: lint install-deps clean
 	. .venv/bin/activate; env PATH=$$PATH:./roverlib-wrapper/bin/ python3 test.py
 
-test-producer: lint install-deps clean
+test-producer: lint install-deps clean update
 	. .venv/bin/activate; ./roverlib-wrapper/bin/roverlib-wrapper -service-yaml ./lib/service_producer.yaml "python3 lib/test_producer.py"
 
-test-consumer: lint install-deps clean
+test-consumer: lint install-deps clean update
 	. .venv/bin/activate; ./roverlib-wrapper/bin/roverlib-wrapper -service-yaml ./lib/service_consumer.yaml "python3 lib/test_consumer.py"
 
 install:
