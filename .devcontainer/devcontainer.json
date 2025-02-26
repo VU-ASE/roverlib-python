@@ -1,22 +1,24 @@
 {
-    "name": "ASE-roverlib-python",
+    "name": "ASE-roverlib-python-dev",
     "build": {
-        "dockerfile": "Dockerfile"
+      "dockerfile": "./Dockerfile",
+      "context": "..",
+      "options": [
+        "--network=host"
+      ]
     },
     "customizations": {
-        "vscode": {
-            "extensions": [
-                "streetsidesoftware.code-spell-checker",
-                "ms-vscode.makefile-tools", // Makefile Tools extension
-                "dbankier.vscode-quick-select" // Quick select with cmd/ctrl+k "
-            ]
-        }
+      "vscode": {
+        "extensions": [
+          "tamasfe.even-better-toml", // TOML syntax support
+          "dbankier.vscode-quick-select", // Quick select with cmd/ctrl+k "
+          "charliermarsh.ruff"
+        ]
+      }
     },
-    "capAdd": [
-        "SYS_PTRACE"
+    "runArgs": [
+      "--network=host"
     ],
-    "securityOpt": [
-        "seccomp=unconfined"
-    ],
-    "forwardPorts": []
+    "remoteUser": "dev"
 }
+
