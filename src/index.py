@@ -8,13 +8,9 @@ import json
 from bootinfo import Service, service_from_dict
 from callbacks import MainCallBack, TerminationCallBack
 from configuration import ServiceConfiguration, NewServiceConfiguration
-#from configuration import *
-#from callbacks import MainCallBack, TerminationCallBack
-
 import zmq
 from loguru import logger
 import rovercom
-from google.protobuf import message
 
 
 
@@ -43,11 +39,6 @@ def setupLogging(debug: bool, output_path: str, serviceName="unknown"):
     logger.remove() 
     log_format = "<black>{time: HH:mm}</black> <level>{level}</level> <white>[%s] {file}:{line}</white> <cyan>></cyan> <white>{message}</white>" % serviceName
     
-    #TODO format for last 3 elements of path
-    def format_file_path(file_path: str):
-        path_parts = file_path.split(os.sep)
-        return os.path.join(*path_parts[-3:])
-
     # set level 
     logger.add(sys.stderr, format=log_format, level="DEBUG" if debug else "INFO")
 

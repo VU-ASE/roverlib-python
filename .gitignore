@@ -169,7 +169,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-src/h
-src/sample.py
-src/sample2.py
+h
 .vscode
