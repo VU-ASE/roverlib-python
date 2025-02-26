@@ -6,7 +6,7 @@ import threading
 import time
 import json
 from bootinfo import Service, service_from_dict
-from callbacks import MainCallBack, TerminationCallBack
+from callbacks import MainCallback, TerminationCallback
 from configuration import ServiceConfiguration, NewServiceConfiguration
 import zmq
 from loguru import logger
@@ -14,12 +14,12 @@ import rovercom
 
 
 
-def handleSignals(onTerminate: TerminationCallBack):
-    def signalHandler(sig, frame):
+def handle_signals(on_terminate: TerminationCallback):
+    def signal_handler(sig, frame):
         logger.warning(f"Signal received: {sig}")
 
         # callback to the service
-        err = onTerminate(sig)
+        err = on_terminate(sig)
 
         if err:
             logger.error(f"Error during termination: {sig}")
@@ -27,17 +27,17 @@ def handleSignals(onTerminate: TerminationCallBack):
         else:
             sys.exit(0)
     # catch SIGTERM or SIGINT
-    signal.signal(signal.SIGTERM, signalHandler)
-    signal.signal(signal.SIGINT, signalHandler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
 
     logger.info("Listening for signals...")
 
 
 # Configures log level and output
-def setupLogging(debug: bool, output_path: str, serviceName="unknown"):
+def setup_logging(debug: bool, output_path: str, service_name="unknown"):
 
     logger.remove() 
-    log_format = "<black>{time: HH:mm}</black> <level>{level}</level> <white>[%s] {file}:{line}</white> <cyan>></cyan> <white>{message}</white>" % serviceName
+    log_format = "<black>{time: HH:mm}</black> <level>{level}</level> <white>[%s] {file}:{line}</white> <cyan>></cyan> <white>{message}</white>" % service_name
     
     # set level 
     logger.add(sys.stderr, format=log_format, level="DEBUG" if debug else "INFO")
@@ -49,7 +49,7 @@ def setupLogging(debug: bool, output_path: str, serviceName="unknown"):
     logger.info("Logger initialized")
 
 
-def OtaTuning(service : Service, configuration : ServiceConfiguration):
+def ota_tuning(service : Service, configuration : ServiceConfiguration):
     context = zmq.Context()
     while True:
         logger.info("Attempting to subscribe to OTA tuning service at %s" % service.tuning.address)
@@ -79,7 +79,7 @@ def OtaTuning(service : Service, configuration : ServiceConfiguration):
             tuning : rovercom.TuningState = rovercom.TuningState().parse(res)
 
             # Is the timestamp later than the last update?
-            if(tuning.timestamp <= configuration.lastUpdate):
+            if(tuning.timestamp <= configuration.last_update):
                 logger.info("Received new tuning values with an outdated timestamp, ignoring...")
                 continue
             
@@ -87,19 +87,15 @@ def OtaTuning(service : Service, configuration : ServiceConfiguration):
             for p in tuning.dynamic_parameters:
                 if p.number:
                     logger.info("%s : %s Setting tuning value", p.number.key, p.number.value)
-                    configuration._setFloat(p.number.key, p.number.value)
+                    configuration._SetFloat(p.number.key, p.number.value)
                 elif p.string:
                     logger.info("%s : %f Setting tuning value", p.string.key, p.string.value)
-                    configuration._setString(p.string.key, p.string.value)
+                    configuration._SetString(p.string.key, p.string.value)
                 else:
                     logger.warning("Unknown tuning value type")
 
 
-            
-
-
-
-def Run(main: MainCallBack, onTerminate: TerminationCallBack):
+def Run(main: MainCallback, on_terminate: TerminationCallback):
     # parse args
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="show all logs (including debug)")
@@ -115,18 +111,18 @@ def Run(main: MainCallBack, onTerminate: TerminationCallBack):
     if definition is None:
         raise RuntimeError("No service definition found in environment variable ASE_SERVICE. Are you sure that this service is started by roverd?")
     
-    serviceDict = json.loads(definition)
-    service = service_from_dict(serviceDict)
+    service_dict = json.loads(definition)
+    service = service_from_dict(service_dict)
 
 
 
     # enable logging using loguru
-    setupLogging(debug, output, service.name)
+    setup_logging(debug, output, service.name)
 
 
 
     # setup for catching SIGTERM and SIGINT, once setup this will run in the background; no active thread needed
-    handleSignals(onTerminate)
+    handle_signals(on_terminate)
 
     # Create a configuration for this service that will be shared with the user program
     configuration = NewServiceConfiguration(service)
@@ -134,8 +130,8 @@ def Run(main: MainCallBack, onTerminate: TerminationCallBack):
     # Support ota tuning in this thread
 	# (the user program can fetch the latest value from the configuration)
     if service.tuning.enabled:
-        threadTuning = threading.Thread(target=OtaTuning, args=(service, configuration), daemon=True)
-        threadTuning.start()
+        thread_tuning = threading.Thread(target=ota_tuning, args=(service, configuration), daemon=True)
+        thread_tuning.start()
 
     # Run the user program
     err = main(service, configuration)

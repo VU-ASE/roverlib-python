@@ -30,12 +30,12 @@ def run(service : Service, configuration : ServiceConfiguration):
 
         socket.send(tuning)
 
-        
-
-    
 
 
-    
+
+
+
+
 def onTerminate(sig : signal):
     logger.info("Terminating")
     return None

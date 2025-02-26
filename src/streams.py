@@ -1,7 +1,6 @@
 import zmq
 from loguru import logger
 import rovercom
-import betterproto
 from bootinfo import Service
 
 CONTEXT = zmq.Context()
@@ -9,10 +8,10 @@ CONTEXT = zmq.Context()
 
 
 class ServiceStream:
-    def __init__(self, address : str, sockType : zmq.Socket):
+    def __init__(self, address : str, sock_type : zmq.Socket):
         self.address = address # zmq address
         self.socket = None # initialized as None, before lazy loading
-        self.sockType = sockType
+        self.sock_type = sock_type
         self.bytes = 0 # amount of bytes read/written so far
 
 
@@ -23,7 +22,7 @@ class WriteStream:
         self.stream = stream
     
     # Initial setup of the stream (done lazily, on the first write)
-    def _initLazy(self):
+    def _initialize(self):
         s = self.stream
 
         # already  initialized
@@ -32,7 +31,7 @@ class WriteStream:
         
         try:
             #create a new socket
-            socket = CONTEXT.socket(s.sockType)
+            socket = CONTEXT.socket(s.sock_type)
             socket.bind(s.address)
         except zmq.ZMQError as e:
             if socket:
@@ -49,14 +48,14 @@ class WriteStream:
 
         if s.socket is None:
             
-            err = self._initLazy()
+            err = self._initialize()
 
             if err:
                 return f"Error during initialization: {str(err)}"
 
-        # Check if the socket writable 
-        if s.sockType != zmq.PUB:
-            return f"Cannot write to a read-only stream"
+        # Check if the socket writable
+        if s.sock_type != zmq.PUB:
+            return "Cannot write to a read-only stream"
         
         try:
             # Write the data
@@ -91,7 +90,7 @@ class ReadStream:
         self.stream = stream
 
     # initial setup of the stream (done lazily, on the first read) 
-    def _initLazy(self):
+    def _initialize(self):
         s = self.stream
 
         # Already initialized
@@ -118,12 +117,12 @@ class ReadStream:
 
         if s.socket is None:
 
-            err = self._initLazy()
+            err = self._initialize()
             if err:
                 return None, f"Error during initialization: {str(err)}"
         
         # Check if the socket is readable
-        if s.sockType != zmq.SUB:
+        if s.sock_type != zmq.SUB:
             return None, f"Cannot write to a read-only stream"
         
         try:
@@ -153,8 +152,8 @@ class ReadStream:
 
 
 # Map of all already handed out streams to the user program (to preserve singletons)
-writeStreams : dict[str, WriteStream] = {}
-readStreams : dict[str, ReadStream] = {}
+write_streams : dict[str, WriteStream] = {}
+read_streams : dict[str, ReadStream] = {}
 
 
 
@@ -162,8 +161,8 @@ readStreams : dict[str, ReadStream] = {}
 # This function returns None if the stream does not exist.
 def GetWriteStream(self : Service, name : str):
     # Is this stream already handed out?
-    if name in writeStreams:
-        return writeStreams[name]
+    if name in write_streams:
+        return write_streams[name]
     
     # Does this stream exist?
     for output in self.outputs:
@@ -175,7 +174,7 @@ def GetWriteStream(self : Service, name : str):
             stream = ServiceStream(address, zmq.PUB)
 
             res = WriteStream(stream)
-            writeStreams[name] = res  
+            write_streams[name] = res  
             return res
     
     logger.critical("Output stream %s does not exist. Update your program code or service.yaml" % name)
@@ -185,11 +184,11 @@ def GetWriteStream(self : Service, name : str):
 # Get a stream that you can read from (i.e. an input stream).
 # This function returns None if the stream does not exist.
 def GetReadStream(self : Service, service : str, name : str):
-    streamName = f"{service}-{name}" 
+    stream_name = f"{service}-{name}"
 
     # Is this stream already handed out?
-    if streamName in readStreams:
-        return readStreams[streamName]
+    if stream_name in read_streams:
+        return read_streams[stream_name]
     
     # Does this stream exist
     for input in self.inputs:
@@ -201,10 +200,10 @@ def GetReadStream(self : Service, service : str, name : str):
                     stream = ServiceStream(stream.address, zmq.SUB)
 
                     res = ReadStream(stream)
-                    readStreams[streamName] = res  
+                    read_streams[stream_name] = res  
                     return res
     
-    logger.critical("Input stream %s does not exist. Update your program code or service.yaml" % streamName)
+    logger.critical("Input stream %s does not exist. Update your program code or service.yaml" % stream_name)
     return None
 
 
