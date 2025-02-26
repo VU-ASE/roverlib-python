@@ -15,7 +15,7 @@ import rovercom
 
 
 def handle_signals(on_terminate: TerminationCallback):
-    def signal_handler(sig, frame):
+    def signal_handler(sig):
         logger.warning(f"Signal received: {sig}")
 
         # callback to the service
@@ -138,7 +138,7 @@ def Run(main: MainCallback, on_terminate: TerminationCallback):
 
     # Handle termination
     if err is not None:
-        logger.critical("Service quit unexpectedly. Exiting...")
+        logger.critical(f"Service quit unexpectedly: {err} Exiting...")
         sys.exit(1)
     else:
         logger.info("Service finished successfully")

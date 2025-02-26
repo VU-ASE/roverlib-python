@@ -70,17 +70,17 @@ class WriteStream:
 
 
         return None
-    
+
     # Write a rovercom sensor output message to the stream
     def Write(self, output : rovercom.SensorOutput):
         if output is None:
             return "Cannot write nil output"
-        
+      
         try:
             # Convert to over-the-wire format
             buf = output.SerializeToString()
         except Exception as e:
-            return f"Failed to serialize sensor data: {str(e)}"    
+            return f"Failed to serialize sensor data: {str(e)}"
 
         # Write the data
         return self.WriteBytes(buf)
@@ -96,7 +96,7 @@ class ReadStream:
         # Already initialized
         if s.socket is not None:
             return None
-        
+
         try:
             # Create a new socket
             socket = CONTEXT.socket(s.sockType)
@@ -106,11 +106,11 @@ class ReadStream:
             if socket:
                 socket.close()
             return f"Failed to create/connect/subscribe read socket at {s.address}: {str(e)}"
-        
+
         s.socket = socket
         s.bytes = 0
         return None
-    
+
     # Read byte data from the stream
     def ReadBytes(self):
         s = self.stream
@@ -120,11 +120,11 @@ class ReadStream:
             err = self._initialize()
             if err:
                 return None, f"Error during initialization: {str(err)}"
-        
+
         # Check if the socket is readable
         if s.sock_type != zmq.SUB:
-            return None, f"Cannot write to a read-only stream"
-        
+            return None, "Cannot write to a read-only stream"
+
         try:
             # Read the data
             data = s.socket.recv()
@@ -141,13 +141,13 @@ class ReadStream:
 
         if err is not None:
             return None, err
-        
+
         try:
             # Convert from over-the-wire format
             output = rovercom.SensorOutput().parse(buf)
         except Exception as e:
             return None, f"Failed to parse sensor data: {str(e)}"
-        
+
         return output, None
 
 
@@ -163,21 +163,21 @@ def GetWriteStream(self : Service, name : str):
     # Is this stream already handed out?
     if name in write_streams:
         return write_streams[name]
-    
+
     # Does this stream exist?
     for output in self.outputs:
         if output.name == name:
             # ZMQ wants to bind write streams to tcp://*:port addresses, so if roverd gave us a localhost, we need to change it to *
             address = output.address.replace("localhost", "*", 1)
-            
+
             # Create a new stream
             stream = ServiceStream(address, zmq.PUB)
 
             res = WriteStream(stream)
             write_streams[name] = res  
             return res
-    
-    logger.critical("Output stream %s does not exist. Update your program code or service.yaml" % name)
+
+    logger.critical(f"Output stream {name} does not exist. Update your program code or service.yaml")
     return None
 
 
@@ -189,25 +189,25 @@ def GetReadStream(self : Service, service : str, name : str):
     # Is this stream already handed out?
     if stream_name in read_streams:
         return read_streams[stream_name]
-    
+
     # Does this stream exist
     for input in self.inputs:
         if input.service == service:
             for stream in input.streams:
                 if stream.name == name:
-                    
+            
                     # Create a new stream
                     stream = ServiceStream(stream.address, zmq.SUB)
 
                     res = ReadStream(stream)
-                    read_streams[stream_name] = res  
+                    read_streams[stream_name] = res
                     return res
-    
-    logger.critical("Input stream %s does not exist. Update your program code or service.yaml" % stream_name)
+
+    logger.critical(f"Input stream {stream_name} does not exist. Update your program code or service.yaml")
     return None
 
 
 # Attach to Service object
 Service.GetWriteStream = GetWriteStream
 Service.GetReadStream = GetReadStream
-        
+ 

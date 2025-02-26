@@ -10,11 +10,10 @@ from testing import inject_valid_service
 
 
 def run(service : Service, configuration : ServiceConfiguration):
-    time.sleep(1000)
+    time.sleep(1)
 
     speed, err = configuration.GetFloatSafe("speed")
     logger.info(speed)
-
     configuration._setString("speed", 1)
 
     speed, err = configuration.GetFloatSafe("speed")
@@ -37,7 +36,6 @@ def run(service : Service, configuration : ServiceConfiguration):
     
 
 
-    return None
 
     while True:
         err = wr.Write(
