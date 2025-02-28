@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Optional, Union, Any, List, TypeVar, Type, Callable, cast
 
-
 T = TypeVar("T")
 EnumT = TypeVar("EnumT", bound=Enum)
 
@@ -261,6 +260,13 @@ class Service:
             result["version"] = from_union([from_str, from_none], self.version)
         result["service"] = self.service
         return result
+    
+    # These functions are manually added so they show up in the editor, implementation found in streams.py
+    def GetWriteStream(self, name : str):
+        pass
+
+    def GetReadStream(self, service : str, name : str):
+        pass
 
 
 def service_from_dict(s: Any) -> Service:

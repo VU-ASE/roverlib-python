@@ -9,7 +9,7 @@ def inject_valid_service():
             {
                 "service": "imaging",
                 "streams": [
-                    {"name": "track_data", "address": "tcp://localhost:788"}, #7890
+                    {"name": "track_data", "address": "tcp://localhost:7882"}, #7890
                     {"name": "debug_info", "address": "tcp://unix:7891"}
                 ]
             },

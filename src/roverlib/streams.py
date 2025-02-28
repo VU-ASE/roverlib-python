@@ -91,7 +91,7 @@ class ReadStream:
 
         try:
             # Create a new socket
-            socket = CONTEXT.socket(s.sockType)
+            socket = CONTEXT.socket(s.sock_type)
             socket.connect(s.address)
             socket.setsockopt_string(zmq.SUBSCRIBE, "")
         except zmq.ZMQError as e:

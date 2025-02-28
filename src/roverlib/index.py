@@ -15,7 +15,7 @@ import roverlib.rovercom as rovercom
 
 
 def handle_signals(on_terminate: TerminationCallback):
-    def signal_handler(sig):
+    def signal_handler(sig, frame):
         logger.warning(f"Signal received: {sig}")
 
         # callback to the service
