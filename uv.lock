@@ -341,7 +341,7 @@ wheels = [
 
 [[package]]
 name = "roverlib"
-version = "0.3.5"
+version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "betterproto" },
