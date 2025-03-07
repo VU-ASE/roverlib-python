@@ -18,6 +18,7 @@ class ServiceConfiguration:
     def GetFloat(self, name : str) -> float:
         logger.debug(self.float_options)
         if name not in self.float_options:
+            logger.critical(f"No float configuration option with name {name}")
             raise NameError(f"No float configuration option with name {name}")
 
         return self.float_options[name]
@@ -32,6 +33,7 @@ class ServiceConfiguration:
     # If you want to read the configuration values concurrently, you should use the GetStringSafe method    
     def GetString(self, name : str) -> str:
         if name not in self.string_options:
+            logger.critical(f"No string configuration option with name {name}")
             raise NameError(f"No string configuration option with name {name}")
 
         return self.string_options[name]

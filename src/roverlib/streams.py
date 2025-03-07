@@ -1,6 +1,7 @@
 import zmq
 import roverlib.rovercom as rovercom
 from roverlib.bootinfo import Service
+from loguru import logger
 
 CONTEXT = zmq.Context()
 
@@ -35,6 +36,7 @@ class WriteStream:
         except zmq.ZMQError as e:
             if socket:
                 socket.close()
+            logger.critical(f"Failed to create/bind write socket at {s.address}: {str(e)}")
             raise zmq.ZMQError(f"Failed to create/bind write socket at {s.address}: {str(e)}")
         
         s.socket = socket
@@ -49,12 +51,14 @@ class WriteStream:
 
         # Check if the socket writable
         if s.sock_type != zmq.PUB:
+            logger.critical("Cannot write to a read-only stream")
             raise TypeError("Cannot write to a read-only stream")
         
         try:
             # Write the data
             s.socket.send(data)
         except zmq.ZMQError as e:
+            logger.critical(f"Failed to write to stream: {str(e)}")
             raise zmq.ZMQError(f"Failed to write to stream: {str(e)}")
         
         if isinstance(data, (bytes, str)):
@@ -66,12 +70,14 @@ class WriteStream:
     # Write a rovercom sensor output message to the stream
     def Write(self, output : rovercom.SensorOutput):
         if output is None:
+            logger.critical("Cannot write nil output")
             raise ValueError("Cannot write nil output")
       
         try:
             # Convert to over-the-wire format
             buf = output.SerializeToString()
         except Exception as e:
+            logger.critical(f"Failed to serialize sensor data: {str(e)}")
             raise RuntimeError(f"Failed to serialize sensor data: {str(e)}")
 
         # Write the data
@@ -97,6 +103,7 @@ class ReadStream:
         except zmq.ZMQError as e:
             if socket:
                 socket.close()
+            logger.critical(f"Failed to create/connect/subscribe read socket at {s.address}: {str(e)}")
             raise zmq.ZMQError(f"Failed to create/connect/subscribe read socket at {s.address}: {str(e)}")
 
         s.socket = socket
@@ -111,12 +118,14 @@ class ReadStream:
 
         # Check if the socket is readable
         if s.sock_type != zmq.SUB:
+            logger.critical("Cannot write to a read-only stream")
             raise TypeError("Cannot write to a read-only stream")
 
         try:
             # Read the data
             data = s.socket.recv()
         except zmq.ZMQError as e:
+            logger.critical(f"failed to read from stream: {str(e)}")
             raise zmq.ZMQError(f"failed to read from stream: {str(e)}")
 
         s.bytes += len(data)
@@ -131,6 +140,7 @@ class ReadStream:
             # Convert from over-the-wire format
             output = rovercom.SensorOutput().parse(buf)
         except Exception as e:
+            logger.critical(f"Failed to parse sensor data: {str(e)}")
             raise RuntimeError(f"Failed to parse sensor data: {str(e)}")
 
         return output
@@ -162,6 +172,7 @@ def GetWriteStream(self : Service, name : str) -> WriteStream:
             write_streams[name] = res  
             return res
 
+    logger.critical(f"Output stream {name} does not exist. Update your program code or service.yaml")
     raise NameError(f"Output stream {name} does not exist. Update your program code or service.yaml")
 
 
@@ -187,6 +198,7 @@ def GetReadStream(self : Service, service : str, name : str) -> ReadStream:
                     read_streams[stream_name] = res
                     return res
 
+    logger.critical(f"Input stream {stream_name} does not exist. Update your program code or service.yaml")
     raise NameError(f"Input stream {stream_name} does not exist. Update your program code or service.yaml")
 
 

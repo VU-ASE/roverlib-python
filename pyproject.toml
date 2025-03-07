@@ -1,6 +1,6 @@
 [project]
 name = "roverlib"
-version = "0.5.2"
+version = "0.5.3"
 description = "ASE roverlib"
 readme = "README.md"
 authors = [

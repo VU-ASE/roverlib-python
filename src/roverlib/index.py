@@ -35,7 +35,7 @@ def setup_logging(debug: bool, output_path: str, service_name="unknown"):
     log_format = "<black>{time: HH:mm}</black> <level>{level}</level> <white>[%s] {file}:{line}</white> <cyan>></cyan> <white>{message}</white>" % service_name
     
     # set level 
-    logger.add(sys.stderr, format=log_format, level="DEBUG" if debug else "INFO")
+    logger.add(sys.stderr, format=log_format, level="DEBUG" if debug else "INFO", colorize=True)
 
     if output_path:
         logger.add(output_path, format=log_format, level="DEBUG" if debug else "INFO")
