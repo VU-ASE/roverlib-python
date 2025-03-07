@@ -1,28 +1,24 @@
 # Usage
 
-TODO: add more roverlib-python specific documentation for end-users
-
 After installation, you can use roverlib as follows:
 
 ```python
 import roverlib
 import signal
 import time
+import roverlib.rovercom as rovercom
 
-def run(service : Service, configuration : ServiceConfiguration):
-    speed, err = configuration.GetFloatSafe("speed")
-    if err is not None:
-        logger.error(err)
+def run(service : roverlib.Service, configuration : roverlib.ServiceConfiguration):
+    
+    # Unlike roverlib-go, these functions do not return an error object, but rather throw an error on failure
+    speed = configuration.GetFloatSafe("speed")
 
-    name, err = configuration.GetStringSafe("name")
-    if err is not None:
-        logger.error(err)
+    name = configuration.GetStringSafe("name")
 
-    write_stream = service.GetWriteStream("motor_movement")
-    if write_stream is None:
-        return ValueError("WriteStream motor_movement not found")
+    write_stream : roverlib.WriteStream = service.GetWriteStream("motor_movement")
 
-    err = write_stream.Write(
+    write_stream.Write(
+        
         rovercom.SensorOutput(
             sensor_id=2,
             timestamp=int(time.time() * 1000),
@@ -35,8 +31,6 @@ def run(service : Service, configuration : ServiceConfiguration):
         ) 
     )
 
-    if err is not None:
-        logger.error(err)
 
     return None
 
