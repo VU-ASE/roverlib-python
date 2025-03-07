@@ -36,6 +36,10 @@ clean:
 	rm -r .pytest_cache .ruff_cache .venv dist
 
 
+
+# Set token: export UV_PUBLISH_TOKEN=(token)
+# check token: echo $UV_PUBLISH_TOKEN
+
 check-publish-token:
 	@if [ -z "$(UV_PUBLISH_TOKEN)" ]; then \
 		echo "Error: UV_PUBLISH_TOKEN environment variable is not set"; \

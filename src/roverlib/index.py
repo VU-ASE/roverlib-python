@@ -19,13 +19,8 @@ def handle_signals(on_terminate: TerminationCallback):
         logger.warning(f"Signal received: {sig}")
 
         # callback to the service
-        err = on_terminate(sig)
+        on_terminate(sig)
 
-        if err:
-            logger.error(f"Error during termination: {sig}")
-            sys.exit(1)
-        else:
-            sys.exit(0)
     # catch SIGTERM or SIGINT
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
@@ -134,11 +129,5 @@ def Run(main: MainCallback, on_terminate: TerminationCallback):
         thread_tuning.start()
 
     # Run the user program
-    err = main(service, configuration)
+    main(service, configuration)
 
-    # Handle termination
-    if err is not None:
-        logger.critical(f"Service quit unexpectedly: {err} Exiting...")
-        sys.exit(1)
-    else:
-        logger.info("Service finished successfully")

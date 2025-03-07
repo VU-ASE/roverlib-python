@@ -3,6 +3,7 @@
 After installation, you can use roverlib as follows:
 
 ```python
+#!/usr/bin/python3
 import roverlib
 import signal
 import time
@@ -32,12 +33,10 @@ def run(service : roverlib.Service, configuration : roverlib.ServiceConfiguratio
     )
 
 
-    return None
 
     
 def on_terminate(sig : signal):
     logger.info("Terminating")
-    return None
 
 
 roverlib.Run(run, on_terminate)
