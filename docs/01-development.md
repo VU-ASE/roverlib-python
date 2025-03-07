@@ -10,10 +10,7 @@ This repository is self-contained and relies heavily on `uv` for dependency mana
 
 * `make build` - builds the library to `dist/` and installs it locally for quick testing
 * `make test` - runs all files in the `tests/` directory
-* `make publish-test` - requires setting an external token with `export PUBLISH_TOKEN=pypi-abc...` and uploads to pypi's test
-* `make publish` - requires setting an external token with `export PUBLISH_TOKEN=pypi-def...` and uploads to the official pypi index
-
+* `make publish-test` - requires setting an external token with `export UV_PUBLISH_TOKEN=pypi-abc...` and uploads to pypi's test
+* `make publish` - requires setting an external token with `export UV_PUBLISH_TOKEN=pypi-def...` and uploads to the official pypi index
 
 Before running the `make publish*` targets, make sure to set the correct token depending on which index you are uploading to.
-
-

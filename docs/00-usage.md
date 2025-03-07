@@ -1,8 +1,14 @@
 # Usage
 
-After installation, you can use roverlib as follows:
+Roverlib comes installed by default on every rover, but if for some reason it isn't, [ssh into the rover](https://ase.vu.nl/docs/tutorials/Fundamental%20Concepts/connecting) and run the following pip install command:
 
-```python
+``` bash
+pip install roverlib
+```
+
+After that, you can use it in a script as shown below, refer to the [service-template-python](https://github.com/VU-ASE/service-template-python) for a complete example.
+
+``` python
 #!/usr/bin/python3
 import roverlib
 import signal
