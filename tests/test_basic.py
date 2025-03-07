@@ -8,12 +8,9 @@ import signal
 from loguru import logger
 import roverlib.rovercom as rovercom
 import threading
-from .testing import inject_valid_service
+from .bootinfo import inject_valid_service
 
 runThread = True
-
-
-
 
 def send_continuous(stream : rover.WriteStream):
     while runThread:
@@ -56,21 +53,12 @@ def run(service : rover.Service, configuration : rover.ServiceConfiguration):
     thread_send = threading.Thread(target=send_continuous, args=(wr,), daemon=True)
     thread_send.start()
 
-  
-
     output = rd.Read()
 
     global runThread 
     runThread = False
-
    
     assert output.sensor_id == 2
-
-
-    
-    
-
-
 
     
 def onTerminate(sig : signal):
@@ -78,10 +66,7 @@ def onTerminate(sig : signal):
     return None
 
 
-
-inject_valid_service()
-
-
-rover.Run(run, onTerminate)
-
+def test_basic():
+    inject_valid_service()
+    rover.Run(run, onTerminate)
 

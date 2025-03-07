@@ -36,5 +36,3 @@ def inject_valid_service():
     }
 
     os.environ["ASE_SERVICE"] = json.dumps(service)
-
-

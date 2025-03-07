@@ -1,7 +1,6 @@
 """
-tests for tuning
+Tests for tuning
 """
-
 
 import roverlib as rover
 import time
@@ -9,22 +8,16 @@ import signal
 from loguru import logger
 import roverlib.rovercom as rovercom
 import zmq
-from .testing import inject_valid_service
-
-
+from .bootinfo import inject_valid_service
 
 def run(service : rover.Service, configuration : rover.ServiceConfiguration):
     ######################################################
-
     time.sleep(2)
-
     context = zmq.Context()
-
     socket = context.socket(zmq.PUB)
     socket.bind("tcp://*:8829")
 
     assert abs(configuration.GetFloatSafe("speed") - 1.5) < 0.01
-
     
     tuning = rovercom.TuningState(timestamp=int(time.time() * 1000), dynamic_parameters=[
         rovercom.TuningStateParameter(number=rovercom.TuningStateParameterNumberParameter(key="speed",value=1.1))
@@ -42,17 +35,10 @@ def run(service : rover.Service, configuration : rover.ServiceConfiguration):
 
 
 
-
-
-
 def onTerminate(sig : signal):
     logger.info("Terminating")
     return None
 
-
-
-
-inject_valid_service()
-
-
-rover.Run(run, onTerminate)
+def test_validation():
+    inject_valid_service()
+    rover.Run(run, onTerminate)
