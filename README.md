@@ -16,7 +16,7 @@
 You can initialize a service with the Python roverlib using `roverctl` as follows:
 
 ```bash
-roverctl service init python --name pytjon-example-service --source github.com/author/example-service-service
+roverctl service init python --name python-example-service --source github.com/author/example-service-service
 ```
 
 Read more about using `roverctl` to initialize services [here](https://ase.vu.nl/docs/framework/Software/rover/roverctl/usage#initialize-a-service).
