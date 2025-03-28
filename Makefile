@@ -1,5 +1,4 @@
-
-
+# Find more information at ase.vu.nl/docs/framework/glossary/makefiles
 
 # Since we are using uv to manage our dependencies, we can utilize the "uv run python ..."
 # command which makes sure to launch the python script with the dependencies installed as
