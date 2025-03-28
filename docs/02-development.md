@@ -1,4 +1,4 @@
-# For Developers
+# For Maintainers
 
 The name of the package is `roverlib` which is the same as the module that is then imported by end users (`pip install roverlib` and `import roverlib` to keep consistency). 
 
