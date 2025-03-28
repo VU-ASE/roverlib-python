@@ -11,7 +11,7 @@
 
 **When building a service that runs on the Rover and should interface the ASE framework, you will most likely want to use a [roverlib](https://ase.vu.nl/docs/framework/glossary/roverlib). This is the variant for python.**
 
-## Initialize a Go service
+## Initialize a Python service
 
 You can initialize a service with the Python roverlib using `roverctl` as follows:
 
