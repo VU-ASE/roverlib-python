@@ -14,3 +14,18 @@ This repository is self-contained and relies heavily on `uv` for dependency mana
 * `make publish` - requires setting an external token with `export UV_PUBLISH_TOKEN=pypi-def...` and uploads to the official pypi index
 
 Before running the `make publish*` targets, make sure to set the correct token depending on which index you are uploading to.
+
+
+# What to do when the bootspec updates
+
+
+Copy the roverd bootspec JSON schema from https://github.com/VU-ASE/rover/blob/main/spec/service-boot/schema.json. Then use the quicktype cJSON generator to generate the Python code at https://app.quicktype.io/. Use the following settings: 
+- Make sure to specify:
+    - Name = Service
+    - Source type = JSON Schema
+
+Paste it into [`src/roverlib/bootinfo.py`](src/roverlib/bootinfo.py)
+
+# What to do when rovercom updates
+
+Copy and paste the contents from the [rovercom definitions](https://github.com/VU-ASE/rovercom/blob/main/packages/python/gen/protobuf_msgs.py) to the [`src/roverlib/rovercom.py`](src/roverlib/rovercom.py) file.
