@@ -29,3 +29,6 @@ Paste it into [`src/roverlib/bootinfo.py`](src/roverlib/bootinfo.py)
 # What to do when rovercom updates
 
 Copy and paste the contents from the [rovercom definitions](https://github.com/VU-ASE/rovercom/blob/main/packages/python/gen/protobuf_msgs.py) to the [`src/roverlib/rovercom.py`](src/roverlib/rovercom.py) file.
+
+#
+
