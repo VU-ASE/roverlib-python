@@ -8,18 +8,27 @@ import json
 from roverlib.bootinfo import Service, service_from_dict
 from roverlib.callbacks import MainCallback, TerminationCallback
 from roverlib.configuration import ServiceConfiguration, NewServiceConfiguration
+from roverlib.streams import CONTEXT
+
 import zmq
 from loguru import logger
 import roverlib.rovercom as rovercom
-
 
 
 def handle_signals(on_terminate: TerminationCallback):
     def signal_handler(sig, frame):
         logger.warning(f"Signal received: {sig}")
 
+        # Close all sockets before we terminate
+        CONTEXT.socket.destroy()
+
         # callback to the service
-        on_terminate(sig)
+        try:
+            on_terminate(sig)
+            os.exit(0)
+        except Exception as e:
+            logger.info(f"termination error: {e}")
+            os.exit(1)
 
     # catch SIGTERM or SIGINT
     signal.signal(signal.SIGTERM, signal_handler)
@@ -30,12 +39,16 @@ def handle_signals(on_terminate: TerminationCallback):
 
 # Configures log level and output
 def setup_logging(debug: bool, output_path: str, service_name="unknown"):
+    logger.remove()
+    log_format = (
+        "<black>{time: HH:mm}</black> <level>{level}</level> <white>[%s] {file}:{line}</white> <cyan>></cyan> <white>{message}</white>"
+        % service_name
+    )
 
-    logger.remove() 
-    log_format = "<black>{time: HH:mm}</black> <level>{level}</level> <white>[%s] {file}:{line}</white> <cyan>></cyan> <white>{message}</white>" % service_name
-    
-    # set level 
-    logger.add(sys.stderr, format=log_format, level="DEBUG" if debug else "INFO", colorize=True)
+    # set level
+    logger.add(
+        sys.stderr, format=log_format, level="DEBUG" if debug else "INFO", colorize=True
+    )
 
     if output_path:
         logger.add(output_path, format=log_format, level="DEBUG" if debug else "INFO")
@@ -44,10 +57,13 @@ def setup_logging(debug: bool, output_path: str, service_name="unknown"):
     logger.info("Logger initialized")
 
 
-def ota_tuning(service : Service, configuration : ServiceConfiguration):
+def ota_tuning(service: Service, configuration: ServiceConfiguration):
     context = zmq.Context()
     while True:
-        logger.info("Attempting to subscribe to OTA tuning service at %s" % service.tuning.address)
+        logger.info(
+            "Attempting to subscribe to OTA tuning service at %s"
+            % service.tuning.address
+        )
         # Initialize zmq socket to retrieve OTA tuning values from the service responsible for this
 
         socket = context.socket(zmq.SUB)
@@ -64,27 +80,33 @@ def ota_tuning(service : Service, configuration : ServiceConfiguration):
 
         while True:
             logger.info("Waiting for new tuning values")
-            
+
             # Receive new configuration, and update this in the shared configuration
             res = socket.recv()
 
             logger.info("Received new tuning values")
 
             # convert from over-the-wire format to TuningState struct
-            tuning : rovercom.TuningState = rovercom.TuningState().parse(res)
+            tuning: rovercom.TuningState = rovercom.TuningState().parse(res)
 
             # Is the timestamp later than the last update?
-            if(tuning.timestamp <= configuration.last_update):
-                logger.info("Received new tuning values with an outdated timestamp, ignoring...")
+            if tuning.timestamp <= configuration.last_update:
+                logger.info(
+                    "Received new tuning values with an outdated timestamp, ignoring..."
+                )
                 continue
-            
+
             # Update the configuration (will ignore values that are not tunable)
             for p in tuning.dynamic_parameters:
                 if p.number:
-                    logger.info("%s : %s Setting tuning value", p.number.key, p.number.value)
+                    logger.info(
+                        "%s : %s Setting tuning value", p.number.key, p.number.value
+                    )
                     configuration._SetFloat(p.number.key, p.number.value)
                 elif p.string:
-                    logger.info("%s : %f Setting tuning value", p.string.key, p.string.value)
+                    logger.info(
+                        "%s : %f Setting tuning value", p.string.key, p.string.value
+                    )
                     configuration._SetString(p.string.key, p.string.value)
                 else:
                     logger.warning("Unknown tuning value type")
@@ -93,8 +115,12 @@ def ota_tuning(service : Service, configuration : ServiceConfiguration):
 def Run(main: MainCallback, on_terminate: TerminationCallback):
     # parse args
     parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", action="store_true", help="show all logs (including debug)")
-    parser.add_argument("--output", type=str, default="", help="path of the output file to log to")
+    parser.add_argument(
+        "--debug", action="store_true", help="show all logs (including debug)"
+    )
+    parser.add_argument(
+        "--output", type=str, default="", help="path of the output file to log to"
+    )
 
     args = parser.parse_args()
 
@@ -104,30 +130,29 @@ def Run(main: MainCallback, on_terminate: TerminationCallback):
     #  Fetch and parse service definition as injected by roverd
     definition = os.getenv("ASE_SERVICE")
     if definition is None:
-        raise RuntimeError("No service definition found in environment variable ASE_SERVICE. Are you sure that this service is started by roverd?")
-    
+        raise RuntimeError(
+            "No service definition found in environment variable ASE_SERVICE. Are you sure that this service is started by roverd?"
+        )
+
     service_dict = json.loads(definition)
     service = service_from_dict(service_dict)
 
-
-
     # enable logging using loguru
     setup_logging(debug, output, service.name)
-
-
 
     # setup for catching SIGTERM and SIGINT, once setup this will run in the background; no active thread needed
     handle_signals(on_terminate)
 
     # Create a configuration for this service that will be shared with the user program
     configuration = NewServiceConfiguration(service)
-    
+
     # Support ota tuning in this thread
-	# (the user program can fetch the latest value from the configuration)
+    # (the user program can fetch the latest value from the configuration)
     if service.tuning.enabled:
-        thread_tuning = threading.Thread(target=ota_tuning, args=(service, configuration), daemon=True)
+        thread_tuning = threading.Thread(
+            target=ota_tuning, args=(service, configuration), daemon=True
+        )
         thread_tuning.start()
 
     # Run the user program
     main(service, configuration)
-
