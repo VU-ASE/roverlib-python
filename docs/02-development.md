@@ -24,11 +24,10 @@ Copy the roverd bootspec JSON schema from https://github.com/VU-ASE/rover/blob/m
     - Name = Service
     - Source type = JSON Schema
 
-Paste it into [`src/roverlib/bootinfo.py`](src/roverlib/bootinfo.py)
+Paste it into [`src/roverlib/bootinfo.py`](https://github.com/VU-ASE/roverlib-python/blob/main/src/roverlib/bootinfo.py)
 
 # What to do when rovercom updates
 
-Copy and paste the contents from the [rovercom definitions](https://github.com/VU-ASE/rovercom/blob/main/packages/python/gen/protobuf_msgs.py) to the [`src/roverlib/rovercom.py`](src/roverlib/rovercom.py) file.
+Copy and paste the contents from the [rovercom definitions](https://github.com/VU-ASE/rovercom/blob/main/packages/python/gen/protobuf_msgs.py) to the [`src/roverlib/rovercom.py`](https://github.com/VU-ASE/roverlib-python/blob/main/src/roverlib/rovercom.py) file.
 
-#
 
