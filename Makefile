@@ -59,3 +59,5 @@ publish: check-publish-token build
 	@uv publish dist/* --index pypi
 
 
+# Install with python3 -m pip install --index-url https://test.pypi.org/simple/ roverlib
+

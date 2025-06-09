@@ -8,27 +8,59 @@ import json
 from roverlib.bootinfo import Service, service_from_dict
 from roverlib.callbacks import MainCallback, TerminationCallback
 from roverlib.configuration import ServiceConfiguration, NewServiceConfiguration
-from roverlib.streams import CONTEXT
+from roverlib.streams import write_streams, read_streams
 
 import zmq
 from loguru import logger
 import roverlib.rovercom as rovercom
 
 
+def shutdown_streams():
+    """
+    Properly shutdown all streams and close sockets
+    """
+    global write_streams, read_streams
+
+    logger.info("Closing all streams...")
+
+    # Close all write stream sockets
+    for name, write_stream in write_streams.items():
+        if write_stream.stream.socket is not None:
+            logger.debug(f"Closing write stream socket: {name}")
+            write_stream.stream.socket.close()
+            write_stream.stream.socket = None
+
+    # Close all read stream sockets
+    for name, read_stream in read_streams.items():
+        if read_stream.stream.socket is not None:
+            logger.debug(f"Closing read stream socket: {name}")
+            read_stream.stream.socket.close()
+            read_stream.stream.socket = None
+
+    # Clear the stream dictionaries
+    write_streams.clear()
+    read_streams.clear()
+
+    logger.info("All streams shut down successfully")
+
+
 def handle_signals(on_terminate: TerminationCallback):
     def signal_handler(sig, frame):
         logger.warning(f"Signal received: {sig}")
 
-        # Close all sockets before we terminate
-        CONTEXT.socket.destroy()
+        # Close all streams and sockets properly
+        try:
+            shutdown_streams()  # This properly closes all sockets and terminates context
+        except Exception as e:
+            logger.error(f"Error during stream shutdown: {e}")
 
         # callback to the service
         try:
             on_terminate(sig)
-            os.exit(0)
+            exit(0)
         except Exception as e:
             logger.info(f"termination error: {e}")
-            os.exit(1)
+            exit(1)
 
     # catch SIGTERM or SIGINT
     signal.signal(signal.SIGTERM, signal_handler)
