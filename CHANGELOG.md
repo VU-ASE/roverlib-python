@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.1](https://github.com/VU-ASE/roverlib-python/compare/v1.0.0...v1.0.1) (2025-06-11)
+
+
+### Bug Fixes
+
+* local links to public ones (max) ([4ea98fa](https://github.com/VU-ASE/roverlib-python/commit/4ea98fa7cbd65efcd8a8666f6cfbca7596b9d3cb))
+* prevent eternal "expected" tests with reused action ([92b7b84](https://github.com/VU-ASE/roverlib-python/commit/92b7b84c15902b56e41aaf0471ef95e881bcaa91))
+* release-please PR eternally expected ([9d75bbc](https://github.com/VU-ASE/roverlib-python/commit/9d75bbc5581938acdd7627a73f9ae2f5f2412de9))
+* shutdown code was incorrect ([6ec593e](https://github.com/VU-ASE/roverlib-python/commit/6ec593ec7a17d8af8482e3a476313d0da2485b45))
+* terminate handler exits ([6855a08](https://github.com/VU-ASE/roverlib-python/commit/6855a0831fe15941f6f24c899b41d620bf7f6f9e))
+
 ## 1.0.0 (2025-03-29)
 
 
