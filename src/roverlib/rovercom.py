@@ -8,7 +8,7 @@ import betterproto
 
 
 class DetectedObjects(betterproto.Enum):
-    """Possible Objects the Imaging Module may detect"""
+    """Possible Objects the Imaging Service may detect"""
 
     FINISH_LINE = 0
     OFF_TRACK = 1
@@ -82,16 +82,61 @@ class FinishLineEvent(betterproto.Message):
 
 @dataclass
 class BatterySensorOutput(betterproto.Message):
+    """
+    This is the message format that a battery service can send out. It contains
+    information about the battery's current state.
+    """
+
     current_output_voltage: float = betterproto.float_field(1)
     warn_voltage: float = betterproto.float_field(2)
     kill_voltage: float = betterproto.float_field(3)
 
 
 @dataclass
+class CameraSensorOutput(betterproto.Message):
+    """
+    This is the message format that a camera-like service can send out. For
+    example, the official ASE imaging service uses this output format. This can
+    then be used by (for example) a controller, to determine how to steer, to
+    stay on the track, or to detect obstacles, intersections, etc.
+    """
+
+    # Basic information, contains everything you need to know to steer and
+    # compute the middle of the track
+    resolution: "Resolution" = betterproto.message_field(1)
+    horizontal_scans: List["HorizontalScan"] = betterproto.message_field(2)
+    detected_objects: List["DetectedObjects"] = betterproto.enum_field(3)
+    # Additional information that can be used to debug the image processing if
+    # present, it is rendered in roverctl-web
+    debug_frame: "DebugFrame" = betterproto.message_field(4)
+
+
+@dataclass
+class Resolution(betterproto.Message):
+    width: int = betterproto.uint32_field(1)
+    height: int = betterproto.uint32_field(2)
+
+
+@dataclass
+class HorizontalScan(betterproto.Message):
+    x_left: int = betterproto.uint32_field(1)
+    x_right: int = betterproto.uint32_field(2)
+    y: int = betterproto.uint32_field(3)
+
+
+@dataclass
+class DebugFrame(betterproto.Message):
+    # (Compressed) JPEG image of the camera output, useful for debugging just
+    # JPEG bytes, that will be rendered in roverctl-web
+    jpeg: bytes = betterproto.bytes_field(1)
+    # A "canvas" that you can "draw" on, for example by placing points, these are
+    # also rendered in roverctl-web
+    canvas: "Canvas" = betterproto.message_field(5)
+
+
+@dataclass
 class CanvasObject(betterproto.Message):
-    line: "CanvasObjectLine" = betterproto.message_field(1, group="object")
-    rectangle: "CanvasObjectRectangle" = betterproto.message_field(2, group="object")
-    circle: "CanvasObjectCircle" = betterproto.message_field(3, group="object")
+    circle: "CanvasObjectCircle" = betterproto.message_field(1, group="object")
 
 
 @dataclass
@@ -101,82 +146,19 @@ class CanvasObjectPoint(betterproto.Message):
 
 
 @dataclass
-class CanvasObjectColor(betterproto.Message):
-    r: int = betterproto.uint32_field(1)
-    g: int = betterproto.uint32_field(2)
-    b: int = betterproto.uint32_field(3)
-    a: int = betterproto.uint32_field(4)
-
-
-@dataclass
-class CanvasObjectLine(betterproto.Message):
-    start: "CanvasObjectPoint" = betterproto.message_field(1)
-    end: "CanvasObjectPoint" = betterproto.message_field(2)
-    width: int = betterproto.uint32_field(3)
-    color: "CanvasObjectColor" = betterproto.message_field(4)
-
-
-@dataclass
-class CanvasObjectRectangle(betterproto.Message):
-    top_left: "CanvasObjectPoint" = betterproto.message_field(1)
-    bottom_right: "CanvasObjectPoint" = betterproto.message_field(2)
-    width: int = betterproto.uint32_field(3)
-    color: "CanvasObjectColor" = betterproto.message_field(4)
-
-
-@dataclass
 class CanvasObjectCircle(betterproto.Message):
     center: "CanvasObjectPoint" = betterproto.message_field(1)
     radius: int = betterproto.uint32_field(2)
     width: int = betterproto.uint32_field(3)
-    color: "CanvasObjectColor" = betterproto.message_field(4)
 
 
 @dataclass
 class Canvas(betterproto.Message):
+    # The width and height are a legacy feature, they should be the same as the
+    # resolution of the camera
     width: int = betterproto.uint32_field(1)
     height: int = betterproto.uint32_field(2)
     objects: List["CanvasObject"] = betterproto.message_field(3)
-
-
-@dataclass
-class CameraSensorOutput(betterproto.Message):
-    """
-    The following sensor outputs are specific to the sensor type, bring your
-    own sensor and add your own output here!
-    """
-
-    trajectory: "CameraSensorOutputTrajectory" = betterproto.message_field(1)
-    debug_frame: "CameraSensorOutputDebugFrame" = betterproto.message_field(2)
-    objects: "CameraSensorOutputObjects" = betterproto.message_field(3)
-
-
-@dataclass
-class CameraSensorOutputTrajectory(betterproto.Message):
-    """Defined by the Path Planner"""
-
-    points: List["CameraSensorOutputTrajectoryPoint"] = betterproto.message_field(1)
-    width: int = betterproto.uint32_field(2)
-    height: int = betterproto.uint32_field(3)
-
-
-@dataclass
-class CameraSensorOutputTrajectoryPoint(betterproto.Message):
-    x: int = betterproto.int32_field(1)
-    y: int = betterproto.int32_field(2)
-
-
-@dataclass
-class CameraSensorOutputDebugFrame(betterproto.Message):
-    jpeg: bytes = betterproto.bytes_field(1)
-    # if image livestreaming is disabled, or imaging module wants to draw
-    # additional information on the image, it can be done here
-    canvas: "Canvas" = betterproto.message_field(5)
-
-
-@dataclass
-class CameraSensorOutputObjects(betterproto.Message):
-    items: List["DetectedObjects"] = betterproto.enum_field(1)
 
 
 @dataclass
@@ -354,10 +336,26 @@ class LuxSensorOutput(betterproto.Message):
 
 @dataclass
 class RpmSensorOutput(betterproto.Message):
-    left_rpm: float = betterproto.float_field(1)
-    left_angle: float = betterproto.float_field(2)
-    right_rpm: float = betterproto.float_field(3)
-    right_angle: float = betterproto.float_field(4)
+    """
+    This is the message format that a RPM sensor service can send out. It is
+    deliberately left with many details, to allow  for different use cases.
+    """
+
+    left_motor: "MotorInformation" = betterproto.message_field(1)
+    right_motor: "MotorInformation" = betterproto.message_field(2)
+
+
+@dataclass
+class MotorInformation(betterproto.Message):
+    # This is probably all the information you need to understand how the motor
+    # behaves
+    rpm: float = betterproto.float_field(1)
+    speed: float = betterproto.float_field(2)
+    # More fine-grained details to (re)compute the RPM and speed or other
+    # parameters you are interested in
+    ticks: int = betterproto.uint32_field(3)
+    timeout_count: int = betterproto.uint32_field(4)
+    sequence_number: int = betterproto.uint32_field(5)
 
 
 @dataclass
@@ -391,11 +389,8 @@ class SensorOutput(betterproto.Message):
     battery_output: "BatterySensorOutput" = betterproto.message_field(
         9, group="sensorOutput"
     )
-    rpm_ouput: "RpmSensorOutput" = betterproto.message_field(10, group="sensorOutput")
+    rpm_output: "RpmSensorOutput" = betterproto.message_field(10, group="sensorOutput")
     lux_output: "LuxSensorOutput" = betterproto.message_field(11, group="sensorOutput")
-    laptime_output: "LapTimeOutput" = betterproto.message_field(
-        12, group="sensorOutput"
-    )
     generic_int_scalar: "GenericIntScalar" = betterproto.message_field(
         13, group="sensorOutput"
     )
