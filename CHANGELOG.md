@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/VU-ASE/roverlib-python/compare/v1.0.1...v2.0.0) (2025-08-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to rovercom v2
+
+### Features
+
+* upgrade to rovercom v2 ([f294f26](https://github.com/VU-ASE/roverlib-python/commit/f294f2675e39519272f66cad50d1b83420d7df95))
+* v2 as published on PyPi ([c422abf](https://github.com/VU-ASE/roverlib-python/commit/c422abffc36ceeaec003abf60fc9435de7c8312c))
+
 ## [1.0.1](https://github.com/VU-ASE/roverlib-python/compare/v1.0.0...v1.0.1) (2025-06-11)
 
 
