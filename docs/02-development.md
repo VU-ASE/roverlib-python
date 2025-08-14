@@ -13,8 +13,23 @@ This repository is self-contained and relies heavily on `uv` for dependency mana
 * `make publish-test` - requires setting an external token with `export UV_PUBLISH_TOKEN=pypi-abc...` and uploads to pypi's test
 * `make publish` - requires setting an external token with `export UV_PUBLISH_TOKEN=pypi-def...` and uploads to the official pypi index
 
-Before running the `make publish*` targets, make sure to set the correct token depending on which index you are uploading to.
 
+## Publishing Explained
+
+There are two places one can publish python packages to: PyPi and TestPyPi. The Test- one serves only the purpose to help maintainers test a package out before they publish it to the official one. Due to Python's dynamic typing, sometimes it is only possible to test things by running them, so we recommend doing this. When publishing to the TestPyPi you must use the following command to install.
+
+``` bash
+# Fetches the latest 'roverlib' package from TestPyPi
+# Make sure to remove any installation of roverlib before proceeding.
+python3 -m pip install --index-url https://test.pypi.org/simple/ roverlib
+```
+
+As explained earlier, you must get a token form the maintainer handbook for the registry to which you want to publish to. For example, to publish to PyPi:
+
+``` bash
+export UV_PUBLISH_TOKEN=pypi-123abc456def
+make publish
+```
 
 # What to do when the bootspec updates
 
